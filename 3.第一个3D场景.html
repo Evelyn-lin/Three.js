@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.bootcss.com/three.js/r83/three.min.js"></script>
+  <style>
+   
+  </style>
+</head>
+
+<body>
+  <script>
+    //创建场景对象Scene
+    var scene = new THREE.Scene();
+
+    //创建网格模型
+    var geomentry = new THREE.BoxGeomentry(100,100,100);//立方体
+    var material = new THREE.MeshLambertMaterial({
+      color: 0x0000ff
+    })
+    var mesh = new THREE.Mesh(geometry,material)
+  </script>
+</body>
+
+</html>
