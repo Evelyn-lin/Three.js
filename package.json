@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "three-css2drender": "^1.0.0",
+    "three-obj-mtl-loader": "^1.0.3"
+  }
+}
