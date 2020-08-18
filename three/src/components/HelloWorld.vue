@@ -1,7 +1,52 @@
 <template>
   <div id="app">
+    <div id="button">
+      <el-button
+        type="primary"
+        @click="showFloor(1)"
+        plain
+      >一层</el-button>
+      <el-button
+        type="primary"
+        @click="showFloor(2)"
+        plain
+      >二层</el-button>
+      <el-button
+        type="primary"
+        @click="showFloor(3)"
+        plain
+      >三层</el-button>
+      <el-button
+        type="primary"
+        @click="showFloor(4)"
+        plain
+      >四层</el-button>
+
+    </div>
     <div id="container"></div>
-    <div id="text"></div>
+    <div
+      id="myChart"
+      :style="{width: '300px', height: '300px'}"
+    ></div>
+    <el-card class="box-card">
+      <div
+        slot="header"
+        class="clearfix"
+      >
+        <span>卡片名称</span>
+        <el-button
+          style="float: right; padding: 3px 0"
+          type="text"
+        >操作按钮</el-button>
+      </div>
+      <div
+        v-for="o in 4"
+        :key="o"
+        class="text item"
+      >
+        {{'列表内容 ' + o }}
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -10,7 +55,7 @@ import * as THREE from 'three'
 // import { OBJLoader, MTLLoader } from 'three-obj-mtl-loader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
-// import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader'
+import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader'
 import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import axios from 'axios'
@@ -37,18 +82,18 @@ export default {
         0.01,
         100000
       )
-      this.camera.position.set(80, 80, 80)
+      this.camera.position.set(80, 60, 120)
       this.scene = new THREE.Scene()
       // 辅助坐标系
-      var axisHelper = new THREE.AxisHelper(250)
-      this.scene.add(axisHelper)
+      // var axisHelper = new THREE.AxisHelper(250)
+      // this.scene.add(axisHelper)
 
       this.renderer = new THREE.WebGLRenderer({ antialias: true })
       this.renderer.setSize(container.clientWidth, container.clientHeight)
 
       container.appendChild(this.renderer.domElement)
       window.addEventListener('resize', this.onWindowResize, false)
-      // window.addEventListener('mousemove', this.handleMouseMove, false)
+      window.addEventListener('click', this.handleMouseMove, false)
     },
     addControls() {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement)
@@ -57,7 +102,7 @@ export default {
       requestAnimationFrame(this.render)
       this.renderer.render(this.scene, this.camera)
     },
-    async loadObj() {
+    async loadObj(mtl, obj) {
       await this.getInfo()
       let _this = this
       var onProgress = function (xhr) {
@@ -74,63 +119,70 @@ export default {
 
       // comment in the following line and import TGALoader if your asset uses TGA textures
       // manager.addHandler( /\.tga$/i, new TGALoader() );
-
-      // new MTLLoader(manager).setPath('/').load('2.mtl', function (materials) {
-      //   materials.preload()
-
-      //   new OBJLoader(manager)
-      //     .setMaterials(materials)
-      //     .setPath('/')
-      //     .load(
-      //       '2.obj',
-      //       function (object) {
-      //         console.log(object)
-      //         object.position.y = 0
-      //         _this.scene.add(object)
-      //       },
-      //       onProgress,
-      //       onError
-      //     )
-      // })
       // const materials = new THREE.MeshLambertMaterial({
       //   color: 0x0000ff, //三角面颜色
       //   wireframe: true //网格模型以线条的模式渲染
       // })
-      new OBJLoader(manager)
-        // .setMaterials(materials)
+
+      let model = new MTLLoader(manager)
         .setPath('/')
-        .load(
-          '2.obj',
-          function (object) {
-            object.children.forEach((item, index) => {
-              if (_this.classrooms[index].status === 0) {
-                item.material = new THREE.MeshLambertMaterial({
-                  color: 0xd54062
-                })
-                console.log(item)
-              }else  if (_this.classrooms[index].status === 1) {
-                item.material = new THREE.MeshLambertMaterial({
-                  color: 0x799351
-                })
-                console.log(item)
-              }else  if (_this.classrooms[index].status === 2) {
-                item.material = new THREE.MeshLambertMaterial({
-                  color: 0xffa36c
-                })
-                console.log(item)
-              }
-            })
-            object.position.y = 0
-            _this.scene.add(object)
-          },
-          onProgress,
-          onError
-        )
+        .load(mtl, function (materials) {
+          materials.preload()
+
+          new OBJLoader(manager)
+            .setMaterials(materials)
+            .setPath('/')
+            .load(
+              obj,
+              function (object) {
+                console.log(object)
+                object.position.y = 0
+                _this.scene.add(object)
+              },
+              onProgress,
+              onError
+            )
+        })
+      console.log(model)
+      // const materials = new THREE.MeshLambertMaterial({
+      //   color: 0x0000ff, //三角面颜色
+      //   wireframe: true //网格模型以线条的模式渲染
+      // })
+      // new OBJLoader(manager)
+      //   // .setMaterials(materials)
+      //   .setPath('/')
+      //   .load(
+      //     '2.obj',
+      //     function (object) {
+      //       object.children.forEach((item, index) => {
+      //         if (_this.classrooms[index].status === 0) {
+      //           item.material = new THREE.MeshLambertMaterial({
+      //             color: 0xd54062
+      //           })
+      //           console.log(item)
+      //         }else  if (_this.classrooms[index].status === 1) {
+      //           item.material = new THREE.MeshLambertMaterial({
+      //             color: 0x799351
+      //           })
+      //           console.log(item)
+      //         }else  if (_this.classrooms[index].status === 2) {
+      //           item.material = new THREE.MeshLambertMaterial({
+      //             color: 0xffa36c
+      //           })
+      //           console.log(item)
+      //         }
+      //       })
+      //       object.position.y = 0
+      //       _this.scene.add(object)
+      //     },
+      //     onProgress,
+      //     onError
+      //   )
     },
     addLight() {
       // 点光源
-      var point = new THREE.PointLight(0xffffff, 2)
-      point.position.set(100, 50, 100) //点光源位置
+      var point = new THREE.PointLight(0xffffff, 0.8)
+      point.position.set(100, 500, 100) //点光源位置
       this.scene.add(point) //点光源添加到场景中
       var pointLightHelper = new THREE.PointLightHelper(point, 1)
       this.scene.add(pointLightHelper)
@@ -331,7 +383,7 @@ export default {
       let _this = this
       await axios
         .get(
-          ' http://49.234.121.178:7300/mock/5f36530edad41119bd229dda/example_copy/getInfo'
+          ' http://49.234.121.178:7300/mock/5f3b3ddbdad41119bd229df4/example/mock'
         )
         .then((res) => {
           if (res.status === 200) {
@@ -349,32 +401,34 @@ export default {
       raycaster.setFromCamera(mouse, this.camera)
       // 计算物体和射线的焦点
       var intersects = raycaster.intersectObjects(
-        this.scene.children[4].children
+        this.scene.children[2].children
       )
-      for (var i = 0; i < this.scene.children[4].children.length; i++) {
-        this.scene.children[4].children[
-          i
-        ].material = new THREE.MeshLambertMaterial({
+      this.scene.children[2].children.forEach((item) => {
+        item.material = new THREE.MeshLambertMaterial({
           color: 0xffffff
         })
-        // intersects[i].object.material.color.set(0xffffff)
-        // console.log(intersects[i].object.material)
-        // intersects[i].object.material = new THREE.MeshBasicMaterial({
-        //   color: 0x009e60
-        // })
+      })
+      if (intersects.length !== 0) {
+        for (var i = 0; i < this.scene.children[2].children.length; i++) {
+          intersects[0].object.material = new THREE.MeshBasicMaterial({
+            color: 0x009e60
+          })
+        }
       }
-      if (intersects.length) {
-        // console.log(intersects[0].object.name)
-        this.message = intersects[0].object.name
-        var vertices = new Float32Array([
-          ...intersects[0].object.geometry.attributes.position.array.slice(105)
-        ])
-        this.text.position.set(...vertices)
 
-        intersects[0].object.material = new THREE.MeshLambertMaterial({
-          color: 0x009e60
-        })
-      }
+      // 标签位置
+      // if (intersects.length) {
+      //   // console.log(intersects[0].object.name)
+      //   this.message = intersects[0].object.name
+      //   var vertices = new Float32Array([
+      //     ...intersects[0].object.geometry.attributes.position.array.slice(105)
+      //   ])
+      //   this.text.position.set(...vertices)
+
+      //   intersects[0].object.material = new THREE.MeshLambertMaterial({
+      //     color: 0x009e60
+      //   })
+      // }
 
       this.renderer.render(this.scene, this.camera)
     },
@@ -386,15 +440,53 @@ export default {
       this.camera.updateProjectionMatrix()
 
       this.renderer.setSize(window.innerWidth, window.innerHeight)
+    },
+    showFloor(num) {
+      this.scene.children.forEach((item, index) => {
+        item.visible = true
+        if (index > num + 1) {
+          item.visible = false
+        }
+      })
+    },
+    drawLine() {
+      // 基于准备好的dom，初始化echarts实例
+      let myChart = this.$echarts.init(document.getElementById('myChart'))
+      // 绘制图表
+      myChart.setOption({
+        title: {
+          text: '教室统计',
+          textStyle: {
+            color: '#eee'
+          }
+        },
+        tooltip: {},
+        series: [
+          {
+            name: '剩余间数',
+            type: 'pie',
+            data: [5, 20, 68],
+            itemStyle: {
+              color: '#b2ebf2',
+              shadowBlur: 200,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          }
+        ]
+      })
     }
   },
   mounted() {
     this.init()
     this.render()
     this.addControls()
-    this.loadObj()
+    this.loadObj('1c.mtl', '1c.obj')
+    this.loadObj('2c.mtl', '2c.obj')
+    this.loadObj('3c.mtl', '3c.obj')
+    this.loadObj('4c.mtl', '4c.obj')
     this.addLight()
-    this.addMessage()
+    // this.drawLine()
+    // this.addMessage()
 
     // this.addCityText()
     // this.add2dText()
@@ -409,12 +501,26 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 #container {
   height: 100vh;
 }
-#text {
+#button {
   color: red;
+  position: absolute;
+  top: 30px;
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+}
+#myChart {
+  position: absolute;
+  top: 200px;
+  left: 50px;
+}
+.box-card {
+  position: absolute;
+  width: 480px;
+  top: 30px;
 }
 </style>
