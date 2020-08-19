@@ -28,7 +28,7 @@
       id="myChart"
       :style="{width: '300px', height: '300px'}"
     ></div>
-    <el-card class="box-card">
+    <!-- <el-card class="box-card">
       <div
         slot="header"
         class="clearfix"
@@ -46,7 +46,7 @@
       >
         {{'列表内容 ' + o }}
       </div>
-    </el-card>
+    </el-card> -->
   </div>
 </template>
 
@@ -57,6 +57,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import { MTLLoader } from 'three/examples/jsm/loaders/MTLLoader'
 import { DDSLoader } from 'three/examples/jsm/loaders/DDSLoader'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js'
 import axios from 'axios'
 
@@ -70,7 +71,7 @@ export default {
       mesh: null,
       controls: null,
       text: null,
-      classrooms: []
+      classrooms: [],
     }
   },
   methods: {
@@ -135,7 +136,6 @@ export default {
             .load(
               obj,
               function (object) {
-                console.log(object)
                 object.position.y = 0
                 _this.scene.add(object)
               },
@@ -181,7 +181,7 @@ export default {
     },
     addLight() {
       // 点光源
-      var point = new THREE.PointLight(0xffffff, 0.8)
+      var point = new THREE.PointLight(0xffffff, 1)
       point.position.set(100, 500, 100) //点光源位置
       this.scene.add(point) //点光源添加到场景中
       var pointLightHelper = new THREE.PointLightHelper(point, 1)
@@ -316,7 +316,7 @@ export default {
       var earthMaterial = new THREE.MeshPhongMaterial({
         specular: 0x333333,
         shininess: 5,
-        normalScale: new THREE.Vector2(0.85, 0.85)
+        normalScale: new THREE.Vector2(0.85, 0.85),
       })
       let earth = new THREE.Mesh(earthGeometry, earthMaterial)
       this.scene.add(earth)
@@ -333,7 +333,7 @@ export default {
       this.text = this.makeTextSprite(`现在是${this.message}`, {
         fontsize: 20,
         borderColor: { r: 255, g: 0, b: 0, a: 0.4 } /* 边框黑色 */,
-        backgroundColor: { r: 255, g: 255, b: 255, a: 0.2 } /* 背景颜色 */
+        backgroundColor: { r: 255, g: 255, b: 255, a: 0.2 } /* 背景颜色 */,
       })
       this.text.center = new THREE.Vector2(0, 0)
       this.scene.add(this.text)
@@ -367,13 +367,13 @@ export default {
           bevelEnabled: true,
           bevelThickness: 10,
           bevelSize: 8,
-          bevelSegments: 5
+          bevelSegments: 5,
         })
         var mat = new THREE.MeshPhongMaterial({
           color: 0xffe502,
           specular: 0x009900,
           shininess: 30,
-          shading: THREE.FlatShading
+          shading: THREE.FlatShading,
         })
         var textObj = new THREE.Mesh(geometry, mat)
         _this.scene.add(textObj)
@@ -405,13 +405,13 @@ export default {
       )
       this.scene.children[2].children.forEach((item) => {
         item.material = new THREE.MeshLambertMaterial({
-          color: 0xffffff
+          color: 0xffffff,
         })
       })
       if (intersects.length !== 0) {
         for (var i = 0; i < this.scene.children[2].children.length; i++) {
           intersects[0].object.material = new THREE.MeshBasicMaterial({
-            color: 0x009e60
+            color: 0x009e60,
           })
         }
       }
@@ -457,8 +457,8 @@ export default {
         title: {
           text: '教室统计',
           textStyle: {
-            color: '#eee'
-          }
+            color: '#eee',
+          },
         },
         tooltip: {},
         series: [
@@ -469,28 +469,51 @@ export default {
             itemStyle: {
               color: '#b2ebf2',
               shadowBlur: 200,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
-          }
-        ]
+              shadowColor: 'rgba(0, 0, 0, 0.5)',
+            },
+          },
+        ],
       })
-    }
+    },
+    addGLTF() {
+      let _this = this
+      let loader = new GLTFLoader()
+
+      loader.load('./1.gltf', function (gltf) {
+        console.log(gltf.meshes)
+        console.log('gltf对象场景属性', gltf.scene)
+        console.log('gltf对象相机属性', gltf.cameras)
+        // 返回的场景对象gltf.scene插入到threejs场景中
+        _this.scene.add(gltf.scene)
+        console.log(this.scene)
+      })
+    },
+    changePosition() {
+      console.log(this.scene.children)
+      let obj = this.scene.children
+      console.log(obj[0])
+      obj[1].position.y = -10
+      obj[2].position.y = -20
+      obj[5].position.y = -30
+    },
   },
-  mounted() {
+  async mounted() {
     this.init()
     this.render()
     this.addControls()
-    this.loadObj('1c.mtl', '1c.obj')
-    this.loadObj('2c.mtl', '2c.obj')
-    this.loadObj('3c.mtl', '3c.obj')
-    this.loadObj('4c.mtl', '4c.obj')
+    await this.loadObj('1c.mtl', '1c.obj')
+    await this.loadObj('2c.mtl', '2c.obj')
+    await this.loadObj('3c.mtl', '3c.obj')
+    await this.loadObj('4c.mtl', '4c.obj')
     this.addLight()
+    this.changePosition()
+    // this.addGLTF()
     // this.drawLine()
     // this.addMessage()
 
     // this.addCityText()
     // this.add2dText()
-  }
+  },
 }
 </script>
 
